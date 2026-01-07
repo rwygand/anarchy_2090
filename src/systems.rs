@@ -23,9 +23,8 @@ pub fn spawn_player(
     map_query: Query<&TiledMapHandle>,
     tiled_maps: Res<Assets<TiledMap>>,
     player_query: Query<&Player>,
-    map_dimensions: Option<Res<MapDimensions>>,
 ) {
-    if !player_query.is_empty() || map_dimensions.is_some() {
+    if !player_query.is_empty() {
         return;
     }
 
@@ -40,13 +39,6 @@ pub fn spawn_player(
     };
 
     let map = &tiled_map.map;
-
-    commands.insert_resource(MapDimensions {
-        width: map.width as i32,
-        height: map.height as i32,
-        tile_width: map.tile_width as f32,
-        tile_height: map.tile_height as f32,
-    });
 
     // Start the player in the center of the map
     let start_grid_x = map.width as i32 / 2;
@@ -79,47 +71,56 @@ pub fn spawn_player(
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<(&mut GridPosition, &mut Transform), With<Player>>,
-    map_dim: If<Res<MapDimensions>>,
-
+    map_query: Query<&TiledMapHandle>,
+    tiled_maps: Res<Assets<TiledMap>>,
 ) {
     if let Ok((mut position, mut transform)) = player_query.single_mut() {
+        let Ok(map_handle) = map_query.single() else {
+            return;
+        };
 
-            let mut new_x = position.x;
-            let mut new_y = position.y;
+        let Some(tiled_map) = tiled_maps.get(&map_handle.0) else {
+            return;
+        };
 
-            if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
-                new_y += 1;
-            }
-            if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
-                new_y -= 1;
-            }
-            if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
-                new_x -= 1;
-            }
-            if keyboard_input.just_pressed(KeyCode::KeyD) || keyboard_input.just_pressed(KeyCode::ArrowRight) {
-                new_x += 1;
+        let map = &tiled_map.map;
+
+        let mut new_x = position.x;
+        let mut new_y = position.y;
+
+        if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
+            new_y += 1;
+        }
+        if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
+            new_y -= 1;
+        }
+        if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
+            new_x -= 1;
+        }
+        if keyboard_input.just_pressed(KeyCode::KeyD) || keyboard_input.just_pressed(KeyCode::ArrowRight) {
+            new_x += 1;
+        }
+
+        if new_y != position.y || new_x != position.x {
+            if new_x < map.width as i32 && new_x >= 0 && new_y < map.height as i32 && new_y >= 0 {
+                position.x = new_x;
+                position.y = new_y;
+                info!("Player moved to grid position: ({}, {})", position.x, position.y);
+            } else {
+                info!("Movement out of bounds: attempted to move to ({}, {})", new_x, new_y);
             }
 
-            if new_y != position.y || new_x != position.x {
-                if new_x < map_dim.width && new_x >= 0 && new_y < map_dim.height && new_y >= 0 {
-                    position.x = new_x;
-                    position.y = new_y;
-                    info!("Player moved to grid position: ({}, {})", position.x, position.y);
-                } else {
-                    info!("Movement out of bounds: attempted to move to ({}, {})", new_x, new_y);
-                }
+            let trans = grid_to_world_position(
+                &position,
+                transform.translation.z,
+                map.tile_width as f32,
+                &TilemapSize{ x: map.width as u32, y: map.height as u32 }
+            );
 
-                let trans = grid_to_world_position(
-                    &position,
-                    transform.translation.z,
-                    map_dim.tile_width,
-                    &TilemapSize{ x: map_dim.width as u32, y: map_dim.height as u32 }
-                );
-
-                transform.translation = trans;
-            }
+            transform.translation = trans;
         }
     }
+}
 
 pub fn camera_follow_player(
     player_query: Query<&Transform, (With<Player>, Without<Camera2d>)>,
