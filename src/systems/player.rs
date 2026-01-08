@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use crate::components::Player;
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
-use crate::systems::grid_to_world_position;
+use crate::helpers::grid_to_world_position;
 
 pub fn spawn_player(
     mut commands: Commands,

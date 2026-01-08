@@ -6,7 +6,7 @@ use bevy_ecs_tilemap::prelude::*;
 use rand::Rng;
 use crate::components::{Monster, Player, TurnTimer};
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
-use crate::systems::grid_to_world_position;
+use crate::helpers::grid_to_world_position;
 
 pub fn spawn_monsters(
     mut commands: Commands,
