@@ -5,8 +5,8 @@ mod components;
 mod helpers;
 mod systems;
 
-use systems::{player, map, camera, movement, monster};
-
+use systems::*;
+use components::TurnTimer;
 use helpers::tiled::TiledMapPlugin;
 
 pub struct AnarchyTwentyNinetyPlugin;
@@ -14,6 +14,7 @@ pub struct AnarchyTwentyNinetyPlugin;
 impl Plugin for AnarchyTwentyNinetyPlugin {
     fn build(&self, app: &mut App) {
         app
+            .init_resource::<TurnTimer>()
             .add_plugins(TilemapPlugin)
             .add_plugins(TiledMapPlugin)
             .add_systems(Startup, (
@@ -24,7 +25,8 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                 player::spawn_player,
                 monster::spawn_monsters,
                 movement::player_movement,
-                camera::follow_player
+                camera::follow_player,
+                turn::tick
             ));
     }
 }

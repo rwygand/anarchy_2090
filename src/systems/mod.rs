@@ -6,6 +6,7 @@ pub mod map;
 pub mod movement;
 pub mod player;
 pub mod monster;
+pub mod turn;
 
 pub fn grid_to_world_position(
     tile_pos: &TilePos,
