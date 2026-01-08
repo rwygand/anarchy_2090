@@ -1,18 +1,17 @@
-use bevy::asset::Assets;
-use bevy::input::ButtonInput;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use crate::components::Player;
+use crate::components::{Player, Monster};
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
 use crate::systems::grid_to_world_position;
 
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&mut TilePos, &mut Transform), With<Player>>,
+    mut player_query: Query<(&mut TilePos, &mut Transform), (With<Player>, Without<Monster>)>,
+    monster_query: Query<&TilePos, With<Monster>>,
     map_query: Query<&TiledMapHandle>,
     tiled_maps: Res<Assets<TiledMap>>,
 ) {
-    let Ok((mut tile_pos, mut transform)) = player_query.single_mut() else {
+    let Ok((mut player_pos, mut transform)) = player_query.single_mut() else {
         return;
     };
 
@@ -25,45 +24,37 @@ pub fn player_movement(
     };
 
     let map = &tiled_map.map;
-    let max_x = map.width - 1;
-    let max_y = map.height - 1;
+    let mut new_pos = *player_pos;
 
-    let mut moved = false;
-
-    if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
-        if tile_pos.y > 0 {
-            tile_pos.y -= 1;
-            moved = true;
-        }
-    }
-    if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
-        if tile_pos.y < max_y {
-            tile_pos.y += 1;
-            moved = true;
-        }
-    }
-    if keyboard_input.just_pressed(KeyCode::KeyA) || keyboard_input.just_pressed(KeyCode::ArrowLeft) {
-        if tile_pos.x > 0 {
-            tile_pos.x -= 1;
-            moved = true;
-        }
-    }
-    if keyboard_input.just_pressed(KeyCode::KeyD) || keyboard_input.just_pressed(KeyCode::ArrowRight) {
-        if tile_pos.x < max_x {
-            tile_pos.x += 1;
-            moved = true;
-        }
+    if keyboard_input.just_pressed(KeyCode::ArrowUp) || keyboard_input.just_pressed(KeyCode::KeyW) {
+        new_pos.y = new_pos.y.saturating_sub(1);
+    } else if keyboard_input.just_pressed(KeyCode::ArrowDown) || keyboard_input.just_pressed(KeyCode::KeyS) {
+        new_pos.y += 1;
+    } else if keyboard_input.just_pressed(KeyCode::ArrowLeft) || keyboard_input.just_pressed(KeyCode::KeyA) {
+        new_pos.x = new_pos.x.saturating_sub(1);
+    } else if keyboard_input.just_pressed(KeyCode::ArrowRight) || keyboard_input.just_pressed(KeyCode::KeyD) {
+        new_pos.x += 1;
     }
 
-    if moved {
-        debug!("Player moved to tile position: ({}, {})", tile_pos.x, tile_pos.y);
+    if new_pos.x >= map.width || new_pos.y >= map.height {
+        return;
+    }
 
-        transform.translation = grid_to_world_position(
-            &tile_pos,
-            transform.translation.z,
+    // Check for monster collision
+    if monster_query.iter().any(|monster_pos| *monster_pos == new_pos) {
+        info!("Player blocked by monster at ({}, {})", new_pos.x, new_pos.y);
+        return;
+    }
+
+    if new_pos != *player_pos {
+        *player_pos = new_pos;
+        let new_trans = grid_to_world_position(
+            &new_pos,
+            100.0,
             map.tile_width as f32,
             map.tile_height as f32,
             &TilemapSize { x: map.width, y: map.height }
         );
+        transform.translation = new_trans;
     }
 }
