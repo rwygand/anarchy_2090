@@ -1,7 +1,6 @@
-use crate::components::{MapDimensions, Monster, Player, TurnTimer};
+use crate::components::{BlocksMovement, MapDimensions, Monster, Player, TurnTimer};
 use crate::helpers::grid_to_world_position;
 use bevy::log::info;
-use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use rand::Rng;
@@ -11,6 +10,7 @@ pub fn spawn_monsters(
     map: Res<MapDimensions>,
     monster_query: Query<&Monster>,
     player_query: Query<&TilePos, With<Player>>,
+    blocking_query: Query<&TilePos, With<BlocksMovement>>,
 ) {
     if !monster_query.is_empty() {
         return;
@@ -36,7 +36,8 @@ pub fn spawn_monsters(
             let dx = pos.x.abs_diff(player_pos.x);
             let dy = pos.y.abs_diff(player_pos.y);
 
-            if dx > 1 || dy > 1 {
+            // Check not too close to player and not on a blocking tile
+            if (dx > 1 || dy > 1) && !blocking_query.iter().any(|blocked_pos| *blocked_pos == pos) {
                 break pos;
             }
         };
@@ -44,21 +45,23 @@ pub fn spawn_monsters(
         let trans = grid_to_world_position(&monster_pos, &map, 10.0);
 
         commands.spawn((
-            Sprite {
-                color: Color::srgb(1.0, 0.0, 0.0),
-                custom_size: Some(Vec2::new(tile_size, tile_size)),
+            Text2d::new("o"),
+            TextFont {
+                font_size: tile_size,
                 ..default()
             },
+            TextColor(Color::srgb(1.0, 0.0, 0.0)),
             Transform::from_translation(trans),
             Monster,
             monster_pos,
+            BlocksMovement,
         ));
     }
 }
 
 pub fn monster_turn(
     mut monster_query: Query<(&mut TilePos, &mut Transform), (With<Monster>, Without<Player>)>,
-    player_query: Query<&TilePos, With<Player>>,
+    blocking_query: Query<&TilePos, (With<BlocksMovement>, Without<Monster>)>,
     turn_timer: Res<TurnTimer>,
     map: Res<MapDimensions>,
 ) {
@@ -66,8 +69,6 @@ pub fn monster_turn(
     if !turn_timer.timer.just_finished() {
         return;
     }
-
-    let player_pos = player_query.single().ok();
 
     let mut rng = rand::rng();
 
@@ -93,15 +94,13 @@ pub fn monster_turn(
                 continue;
             }
 
-            // Check if player is at target position
-            if let Some(p_pos) = player_pos {
-                if *p_pos == new_pos {
-                    info!(
-                        "Monster at ({}, {}) blocked by player at ({}, {})",
-                        monster_pos.x, monster_pos.y, new_pos.x, new_pos.y
-                    );
-                    continue;
-                }
+            // Check for any blocking entity
+            if blocking_query.iter().any(|pos| *pos == new_pos) {
+                info!(
+                    "Monster at ({}, {}) blocked at ({}, {})",
+                    monster_pos.x, monster_pos.y, new_pos.x, new_pos.y
+                );
+                continue;
             }
 
             // Apply movement

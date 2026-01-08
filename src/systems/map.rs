@@ -1,4 +1,5 @@
-use crate::components::MapDimensions;
+use crate::components::{BlocksMovement, MapDimensions, Wall};
+use crate::helpers::grid_to_world_position;
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -80,6 +81,30 @@ pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         transform,
         ..default()
     });
+
+    // Spawn perimeter walls
+    for x in 0..map_dims.width {
+        for y in 0..map_dims.height {
+            // Check if position is on perimeter
+            if x == 0 || x == map_dims.width - 1 || y == 0 || y == map_dims.height - 1 {
+                let wall_pos = TilePos { x, y };
+                let world_pos = grid_to_world_position(&wall_pos, &map_dims, 10.0);
+
+                commands.spawn((
+                    Text2d::new("#"),
+                    TextFont {
+                        font_size: map_dims.tile_size,
+                        ..default()
+                    },
+                    TextColor(Color::srgb(0.5, 0.5, 0.5)), // Gray walls
+                    Transform::from_translation(world_pos),
+                    Wall,
+                    BlocksMovement,
+                    wall_pos,
+                ));
+            }
+        }
+    }
 
     commands.insert_resource(map_dims);
 }

@@ -1,4 +1,4 @@
-use crate::components::{MapDimensions, Monster, Player};
+use crate::components::{BlocksMovement, MapDimensions, Monster, Player};
 use crate::helpers::grid_to_world_position;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -10,7 +10,6 @@ pub fn spawn_player(mut commands: Commands, player_query: Query<&Player>, map: R
 
     let tile_size = map.tile_size;
 
-    // Start at the center of the map
     let player_pos = TilePos {
         x: map.width / 2,
         y: map.height / 2,
@@ -25,11 +24,12 @@ pub fn spawn_player(mut commands: Commands, player_query: Query<&Player>, map: R
     info!("Map dimensions: width {}, height {}", map.width, map.height);
 
     commands.spawn((
-        Sprite {
-            color: Color::WHITE,
-            custom_size: Some(Vec2::new(tile_size, tile_size)),
+        Text2d::new("@"),
+        TextFont {
+            font_size: tile_size,
             ..default()
         },
+        TextColor(Color::WHITE),
         Transform::from_translation(world_pos),
         Player,
         player_pos,
@@ -39,7 +39,7 @@ pub fn spawn_player(mut commands: Commands, player_query: Query<&Player>, map: R
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<(&mut TilePos, &mut Transform), (With<Player>, Without<Monster>)>,
-    monster_query: Query<&TilePos, With<Monster>>,
+    blocking_query: Query<&TilePos, (With<BlocksMovement>, Without<Player>)>,
     map: Res<MapDimensions>,
 ) {
     let Ok((mut player_pos, mut transform)) = player_query.single_mut() else {
@@ -69,14 +69,8 @@ pub fn player_movement(
     }
 
     // Check for monster collision
-    if monster_query
-        .iter()
-        .any(|monster_pos| *monster_pos == new_pos)
-    {
-        info!(
-            "Player blocked by monster at ({}, {})",
-            new_pos.x, new_pos.y
-        );
+    if blocking_query.iter().any(|pos| *pos == new_pos) {
+        info!("Player blocked by entity at ({}, {})", new_pos.x, new_pos.y);
         return;
     }
 

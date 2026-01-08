@@ -6,6 +6,12 @@ pub struct Player;
 #[derive(Component)]
 pub struct Monster;
 
+#[derive(Component)]
+pub struct Wall;
+
+#[derive(Component)]
+pub struct BlocksMovement;
+
 #[derive(Resource)]
 pub struct TurnTimer {
     pub timer: Timer,
