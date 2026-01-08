@@ -27,9 +27,9 @@ pub fn player_movement(
     let mut new_pos = *player_pos;
 
     if keyboard_input.just_pressed(KeyCode::ArrowUp) || keyboard_input.just_pressed(KeyCode::KeyW) {
-        new_pos.y = new_pos.y.saturating_sub(1);
-    } else if keyboard_input.just_pressed(KeyCode::ArrowDown) || keyboard_input.just_pressed(KeyCode::KeyS) {
         new_pos.y += 1;
+    } else if keyboard_input.just_pressed(KeyCode::ArrowDown) || keyboard_input.just_pressed(KeyCode::KeyS) {
+        new_pos.y = new_pos.y.saturating_sub(1);
     } else if keyboard_input.just_pressed(KeyCode::ArrowLeft) || keyboard_input.just_pressed(KeyCode::KeyA) {
         new_pos.x = new_pos.x.saturating_sub(1);
     } else if keyboard_input.just_pressed(KeyCode::ArrowRight) || keyboard_input.just_pressed(KeyCode::KeyD) {

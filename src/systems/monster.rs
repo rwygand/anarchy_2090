@@ -34,6 +34,8 @@ pub fn spawn_monsters(
     let map = &tiled_map.map;
     let mut rng = rand::rng();
     let monster_count = rng.random_range(3..=10);
+    let tile_size = map.tile_width as f32;
+    let half_tile = tile_size / 2.0;
 
     info!("Spawning {} monsters", monster_count);
 
@@ -63,11 +65,10 @@ pub fn spawn_monsters(
         commands.spawn((
             Sprite {
                 color: Color::srgb(1.0, 0.0, 0.0),
-                custom_size: Some(Vec2::new(16.0, 16.0)),
+                custom_size: Some(Vec2::new(half_tile, half_tile)),
                 ..default()
             },
-            Transform::from_translation(trans)
-                .with_rotation(Quat::from_rotation_z(std::f32::consts::PI / 4.0)),
+            Transform::from_translation(trans),
             Monster,
             monster_pos,
         ));
@@ -127,7 +128,6 @@ pub fn monster_turn(
             }
 
             // Apply movement
-            *monster_pos = new_pos;
             let new_trans = grid_to_world_position(
                 &new_pos,
                 100.0,
@@ -135,6 +135,8 @@ pub fn monster_turn(
                 map.tile_height as f32,
                 &TilemapSize { x: map.width, y: map.height }
             );
+
+            *monster_pos = new_pos;
             transform.translation = new_trans;
 
             info!("Monster moved to ({}, {})", new_pos.x, new_pos.y);

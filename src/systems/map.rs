@@ -9,7 +9,7 @@ pub fn load_map(
     asset_server: Res<AssetServer>,
 ) {
     commands.spawn(TiledMapBundle {
-        tiled_map: TiledMapHandle(asset_server.load("isometric_map.tmx")),
+        tiled_map: TiledMapHandle(asset_server.load("map.tmx")),
         render_settings: TilemapRenderSettings {
             render_chunk_size: UVec2::new(2, 2),
             y_sort: false,

@@ -24,6 +24,8 @@ pub fn spawn_player(
     };
 
     let map = &tiled_map.map;
+    let tile_size = map.tile_width as f32;
+    let half_tile = tile_size / 2.0;
 
     // Start at the center of the map
     let player_pos = TilePos {
@@ -31,7 +33,7 @@ pub fn spawn_player(
         y: map.height / 2
     };
 
-    let trans = grid_to_world_position(
+    let world_pos = grid_to_world_position(
         &player_pos,
         100.0,
         map.tile_width as f32,
@@ -39,16 +41,16 @@ pub fn spawn_player(
         &TilemapSize { x: map.width, y: map.height }
     );
 
-    info!("Spawning player at grid ({}, {}) world pos ({}, {})", player_pos.x, player_pos.y, trans.x, trans.y);
+    info!("Spawning player at grid ({}, {}) world pos ({}, {})", player_pos.x, player_pos.y, world_pos.x, world_pos.y);
     info!("Map dimensions: width {}, height {}", map.width, map.height);
 
     commands.spawn((
         Sprite {
             color: Color::WHITE,
-            custom_size: Some(Vec2::new(16.0, 16.0)),
+            custom_size: Some(Vec2::new(half_tile, half_tile)),
             ..default()
         },
-        Transform::from_translation(trans).with_rotation(Quat::from_rotation_z(-PI / 4.0)),
+        Transform::from_translation(world_pos),
         Player,
         player_pos,
     ));

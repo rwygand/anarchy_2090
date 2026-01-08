@@ -34,7 +34,9 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
+        .add_plugins(DefaultPlugins
+            .set(ImagePlugin::default_nearest())
+            .set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Anarchy 2090".to_string(),
                 resolution: (1280, 720).into(),
