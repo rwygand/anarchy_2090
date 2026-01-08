@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use bevy::asset::{AssetServer, Assets};
 use bevy::log::info;
 use bevy::math::Vec2;
@@ -6,6 +7,7 @@ use bevy_ecs_tilemap::prelude::*;
 use crate::components::Player;
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
 use crate::systems::grid_to_world_position;
+use bevy::prelude::*;
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -45,15 +47,13 @@ pub fn spawn_player(
     info!("Spawning player at grid ({}, {}) world pos ({}, {})", player_pos.x, player_pos.y, trans.x, trans.y);
     info!("Map dimensions: width {}, height {}", map.width, map.height);
 
-    let player_handle = asset_server.load("isometric_player.png");
-
     commands.spawn((
         Sprite {
-            image: player_handle,
+            color: Color::WHITE,
             custom_size: Some(Vec2::new(32.0, 32.0)),
             ..default()
         },
-        Transform::from_translation(trans),
+        Transform::from_translation(trans).with_rotation(Quat::from_rotation_z(-PI / 4.0)),
         Player,
         player_pos,
     ));
