@@ -26,7 +26,8 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                 monster::spawn_monsters,
                 movement::player_movement,
                 camera::follow_player,
-                turn::tick
+                turn::tick,
+                monster::monster_turn,
             ));
     }
 }
