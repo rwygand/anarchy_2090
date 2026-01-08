@@ -2,8 +2,8 @@ use bevy::asset::{AssetServer, Assets};
 use bevy::log::info;
 use bevy::math::Vec2;
 use bevy::prelude::{default, Commands, Query, Res, Sprite, Transform};
-use bevy_ecs_tilemap::map::TilemapSize;
-use crate::components::{GridPosition, Player};
+use bevy_ecs_tilemap::prelude::*;
+use crate::components::Player;
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
 use crate::systems::grid_to_world_position;
 
@@ -29,9 +29,9 @@ pub fn spawn_player(
     let map = &tiled_map.map;
 
     // Start at the center of the map
-    let player_pos = GridPosition {
-        x: map.width as i32 / 2,
-        y: map.height as i32 / 2
+    let player_pos = TilePos {
+        x: map.width / 2,
+        y: map.height / 2
     };
 
     let trans = grid_to_world_position(
