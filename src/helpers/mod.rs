@@ -1,19 +1,11 @@
+use crate::components::MapDimensions;
 use bevy::math::Vec3;
 use bevy_ecs_tilemap::prelude::TilePos;
-use crate::helpers::tiled::TiledMap;
 
-pub mod tiled;
-
-pub fn grid_to_world_position(
-    pos: &TilePos,
-    z: f32,
-    tiled_map: &TiledMap,
-) -> Vec3 {
-    let map = &tiled_map.map;
-    let tile_width = map.tile_width as f32;
-    let tile_height = map.tile_height as f32;
-
-    let x = (pos.x as f32 - map.width as f32 / 2.0) * tile_width + tile_width / 2.0;
-    let y = (pos.y as f32 - map.height as f32 / 2.0) * tile_height + tile_height / 2.0;
-    Vec3::new(x, y, z)
+pub fn grid_to_world_position(tile_pos: &TilePos, map_dims: &MapDimensions, z: f32) -> Vec3 {
+    let tile_size = map_dims.tile_size;
+    // Calculate position with bottom-left origin
+    let world_x = (tile_pos.x as f32 * tile_size) - (map_dims.width as f32 * tile_size) / 2.0;
+    let world_y = (tile_pos.y as f32 * tile_size) - (map_dims.height as f32 * tile_size) / 2.0;
+    Vec3::new(world_x, world_y, z)
 }

@@ -20,3 +20,20 @@ impl Default for TurnTimer {
         }
     }
 }
+
+#[derive(Resource)]
+pub struct MapDimensions {
+    pub width: u32,
+    pub height: u32,
+    pub tile_size: f32,
+}
+
+impl Default for MapDimensions {
+    fn default() -> Self {
+        Self {
+            width: 32,
+            height: 32,
+            tile_size: 16.0,
+        }
+    }
+}
