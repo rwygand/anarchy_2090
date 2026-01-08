@@ -1,7 +1,5 @@
-use bevy::camera::Camera2d;
-use bevy::prelude::{Commands, Query, Transform, With, Without};
+use bevy::prelude::*;
 use crate::components::Player;
-
 
 pub fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);

@@ -56,10 +56,8 @@ pub fn spawn_monsters(
 
         let trans = grid_to_world_position(
             &monster_pos,
-            100.0,
-            map.tile_width as f32,
-            map.tile_height as f32,
-            &TilemapSize { x: map.width, y: map.height }
+            10.0,
+            tiled_map
         );
 
         commands.spawn((
@@ -130,10 +128,8 @@ pub fn monster_turn(
             // Apply movement
             let new_trans = grid_to_world_position(
                 &new_pos,
-                100.0,
-                map.tile_width as f32,
-                map.tile_height as f32,
-                &TilemapSize { x: map.width, y: map.height }
+                10.0,
+                &tiled_map
             );
 
             *monster_pos = new_pos;

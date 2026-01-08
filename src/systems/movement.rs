@@ -49,10 +49,8 @@ pub fn player_movement(
     if new_pos != *player_pos {
         let new_trans = grid_to_world_position(
             &new_pos,
-            100.0,
-            map.tile_width as f32,
-            map.tile_height as f32,
-            &TilemapSize { x: map.width, y: map.height }
+            10.0,
+            &tiled_map
         );
         *player_pos = new_pos;
         transform.translation = new_trans;
