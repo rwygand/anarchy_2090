@@ -1,7 +1,6 @@
 use bevy::asset::Assets;
 use bevy::input::ButtonInput;
-use bevy::log::info;
-use bevy::prelude::{KeyCode, Query, Res, Transform, With};
+use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use crate::components::Player;
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
@@ -57,7 +56,7 @@ pub fn player_movement(
     }
 
     if moved {
-        info!("Player moved to tile position: ({}, {})", tile_pos.x, tile_pos.y);
+        debug!("Player moved to tile position: ({}, {})", tile_pos.x, tile_pos.y);
 
         transform.translation = grid_to_world_position(
             &tile_pos,

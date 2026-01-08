@@ -4546,6 +4546,7 @@ dependencies = [
  "bevy_ecs_tiled",
  "bevy_ecs_tilemap",
  "log",
+ "rand",
  "serde_json",
  "thiserror 2.0.17",
 ]

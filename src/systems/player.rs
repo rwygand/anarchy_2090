@@ -1,17 +1,12 @@
 use std::f32::consts::PI;
-use bevy::asset::{AssetServer, Assets};
-use bevy::log::info;
-use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Res, Sprite, Transform};
+use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use crate::components::Player;
 use crate::helpers::tiled::{TiledMap, TiledMapHandle};
 use crate::systems::grid_to_world_position;
-use bevy::prelude::*;
 
 pub fn spawn_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     map_query: Query<&TiledMapHandle>,
     tiled_maps: Res<Assets<TiledMap>>,
     player_query: Query<&Player>,
@@ -50,7 +45,7 @@ pub fn spawn_player(
     commands.spawn((
         Sprite {
             color: Color::WHITE,
-            custom_size: Some(Vec2::new(32.0, 32.0)),
+            custom_size: Some(Vec2::new(16.0, 16.0)),
             ..default()
         },
         Transform::from_translation(trans).with_rotation(Quat::from_rotation_z(-PI / 4.0)),

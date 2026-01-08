@@ -5,7 +5,7 @@ mod components;
 mod helpers;
 mod systems;
 
-use systems::{player, map, camera, movement};
+use systems::{player, map, camera, movement, monster};
 
 use helpers::tiled::TiledMapPlugin;
 
@@ -22,6 +22,7 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
             ))
             .add_systems(Update, (
                 player::spawn_player,
+                monster::spawn_monsters,
                 movement::player_movement,
                 camera::follow_player
             ));
