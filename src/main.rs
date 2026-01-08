@@ -9,6 +9,25 @@ use systems::{player, map, camera, movement};
 
 use helpers::tiled::TiledMapPlugin;
 
+pub struct AnarchyTwentyNinetyPlugin;
+
+impl Plugin for AnarchyTwentyNinetyPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_plugins(TilemapPlugin)
+            .add_plugins(TiledMapPlugin)
+            .add_systems(Startup, (
+                camera::setup,
+                map::load_map,
+            ))
+            .add_systems(Update, (
+                player::spawn_player,
+                movement::player_movement,
+                camera::follow_player
+            ));
+    }
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -19,9 +38,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(TilemapPlugin)
-        .add_plugins(TiledMapPlugin)
-        .add_systems(Startup, (map::load_map, camera::setup).chain())
-        .add_systems(Update, (player::spawn_player, movement::player_movement, camera::follow_player))
+        .add_plugins(AnarchyTwentyNinetyPlugin)
         .run();
 }

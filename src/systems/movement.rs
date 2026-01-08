@@ -32,14 +32,14 @@ pub fn player_movement(
     let mut moved = false;
 
     if keyboard_input.just_pressed(KeyCode::KeyW) || keyboard_input.just_pressed(KeyCode::ArrowUp) {
-        if tile_pos.y < max_y {
-            tile_pos.y += 1;
+        if tile_pos.y > 0 {
+            tile_pos.y -= 1;
             moved = true;
         }
     }
     if keyboard_input.just_pressed(KeyCode::KeyS) || keyboard_input.just_pressed(KeyCode::ArrowDown) {
-        if tile_pos.y > 0 {
-            tile_pos.y -= 1;
+        if tile_pos.y < max_y {
+            tile_pos.y += 1;
             moved = true;
         }
     }
