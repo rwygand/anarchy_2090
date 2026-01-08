@@ -23,11 +23,11 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     turn::tick,
                     monster::monster_turn,
                 )
-                    .before(movement::player_movement),
+                    .before(player::player_movement),
             )
             .add_systems(
                 Update,
-                movement::player_movement.before(camera::follow_player),
+                player::player_movement.before(camera::follow_player),
             )
             .add_systems(Update, camera::follow_player);
     }
