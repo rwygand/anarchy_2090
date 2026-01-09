@@ -1,5 +1,5 @@
 use crate::components::{
-    BlocksMovement, FieldOfView, MapDimensions, Monster, Player, TickTimer, Visible,
+    BlocksMovement, FieldOfView, MapDimensions, Monster, Player, PlayerDetected, TickTimer, Visible,
 };
 use crate::helpers::grid_to_world_position;
 use crate::map_builder::MapBuilder;
@@ -13,16 +13,10 @@ pub fn spawn_monsters(
     map: Res<MapDimensions>,
     map_builder: Res<MapBuilder>,
     monster_query: Query<&Monster>,
-    player_query: Query<&TilePos, With<Player>>,
-    blocking_query: Query<&TilePos, With<BlocksMovement>>,
 ) {
     if !monster_query.is_empty() {
         return;
     }
-
-    let Ok(player_pos) = player_query.single() else {
-        return;
-    };
 
     let mut rng = rand::rng();
     let monster_count = rng.random_range(5..=10);
@@ -69,6 +63,7 @@ pub fn spawn_monsters(
             BlocksMovement,
             FieldOfView::new(6),
             Visible::default(),
+            PlayerDetected::default(),
         ));
     }
 
@@ -131,5 +126,27 @@ pub fn monster_turn(
 
             info!("Monster moved to ({}, {})", new_pos.x, new_pos.y);
         }
+    }
+}
+
+pub fn monster_ai(
+    mut monster_query: Query<(&TilePos, &FieldOfView, &mut PlayerDetected), With<Monster>>,
+    player_query: Query<&TilePos, With<Player>>,
+) {
+    let Ok(player_pos) = player_query.single() else {
+        return;
+    };
+
+    for (monster_pos, fov, mut detected) in monster_query.iter_mut() {
+        let can_see = fov.visible_tiles.contains(player_pos);
+
+        if can_see && !detected.0 {
+            info!(
+                "Monster at ({}, {}) spotted player at ({}, {})!",
+                monster_pos.x, monster_pos.y, player_pos.x, player_pos.y
+            );
+        }
+
+        detected.0 = can_see;
     }
 }

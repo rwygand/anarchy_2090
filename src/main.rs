@@ -32,9 +32,10 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                 Update,
                 player::player_movement.before(visibility::update_fov),
             )
+            .add_systems(Update, visibility::update_fov.before(monster::monster_ai))
             .add_systems(
                 Update,
-                visibility::update_fov.before(visibility::update_visibility),
+                monster::monster_ai.before(visibility::update_visibility),
             )
             .add_systems(
                 Update,

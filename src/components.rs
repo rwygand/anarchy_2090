@@ -81,3 +81,13 @@ impl Default for Explored {
         Self(false)
     }
 }
+
+// In src/components.rs
+#[derive(Component)]
+pub struct PlayerDetected(pub bool);
+
+impl Default for PlayerDetected {
+    fn default() -> Self {
+        Self(false)
+    }
+}
