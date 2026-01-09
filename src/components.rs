@@ -43,3 +43,32 @@ impl Default for MapDimensions {
         }
     }
 }
+
+use bevy_ecs_tilemap::prelude::TilePos;
+use std::collections::HashSet;
+
+#[derive(Component)]
+pub struct FieldOfView {
+    pub visible_tiles: HashSet<TilePos>,
+    pub range: i32,
+    pub is_dirty: bool,
+}
+
+impl FieldOfView {
+    pub fn new(range: i32) -> Self {
+        Self {
+            visible_tiles: HashSet::new(),
+            range,
+            is_dirty: true,
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct Visible(pub bool);
+
+impl Default for Visible {
+    fn default() -> Self {
+        Self(false)
+    }
+}

@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 mod components;
+mod fov;
 mod helpers;
 mod map_builder;
 mod systems;
@@ -23,12 +24,21 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     monster::spawn_monsters,
                     timer::tick,
                     monster::monster_turn,
+                    visibility::mark_fov_dirty,
                 )
                     .before(player::player_movement),
             )
             .add_systems(
                 Update,
-                player::player_movement.before(camera::follow_player),
+                player::player_movement.before(visibility::update_fov),
+            )
+            .add_systems(
+                Update,
+                visibility::update_fov.before(visibility::update_visibility),
+            )
+            .add_systems(
+                Update,
+                visibility::update_visibility.before(camera::follow_player),
             )
             .add_systems(Update, camera::follow_player);
     }

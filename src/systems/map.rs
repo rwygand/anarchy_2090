@@ -1,4 +1,4 @@
-use crate::components::{BlocksMovement, MapDimensions, Wall};
+use crate::components::{BlocksMovement, MapDimensions, Visible, Wall};
 use crate::helpers::grid_to_world_position;
 use crate::map_builder::MapBuilder;
 use bevy::asset::RenderAssetUsages;
@@ -108,6 +108,7 @@ pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
                     Wall,
                     BlocksMovement,
                     wall_pos,
+                    Visible::default(),
                 ));
             }
         }

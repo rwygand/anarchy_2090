@@ -1,4 +1,6 @@
-use crate::components::{BlocksMovement, MapDimensions, Monster, Player, TickTimer};
+use crate::components::{
+    BlocksMovement, FieldOfView, MapDimensions, Monster, Player, TickTimer, Visible,
+};
 use crate::helpers::grid_to_world_position;
 use crate::map_builder::MapBuilder;
 use bevy::log::info;
@@ -65,6 +67,8 @@ pub fn spawn_monsters(
             Monster,
             monster_pos,
             BlocksMovement,
+            FieldOfView::new(6),
+            Visible::default(),
         ));
     }
 
