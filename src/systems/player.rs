@@ -1,18 +1,29 @@
 use crate::components::{BlocksMovement, MapDimensions, Monster, Player};
 use crate::helpers::grid_to_world_position;
+use crate::map_builder::MapBuilder;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-pub fn spawn_player(mut commands: Commands, player_query: Query<&Player>, map: Res<MapDimensions>) {
+pub fn spawn_player(
+    mut commands: Commands,
+    player_query: Query<&Player>,
+    map: Res<MapDimensions>,
+    map_builder: Res<MapBuilder>,
+) {
     if !player_query.is_empty() {
         return;
     }
 
     let tile_size = map.tile_size;
 
-    let player_pos = TilePos {
-        x: map.width / 2,
-        y: map.height / 2,
+    // Spawn player in center of first room
+    let player_pos = if !map_builder.rooms.is_empty() {
+        map_builder.rooms[0].center()
+    } else {
+        TilePos {
+            x: map.width / 2,
+            y: map.height / 2,
+        }
     };
 
     let world_pos = grid_to_world_position(&player_pos, &map, 10.0);

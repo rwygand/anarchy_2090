@@ -1,5 +1,6 @@
 use crate::components::{BlocksMovement, MapDimensions, Monster, Player, TickTimer};
 use crate::helpers::grid_to_world_position;
+use crate::map_builder::MapBuilder;
 use bevy::log::info;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -8,6 +9,7 @@ use rand::Rng;
 pub fn spawn_monsters(
     mut commands: Commands,
     map: Res<MapDimensions>,
+    map_builder: Res<MapBuilder>,
     monster_query: Query<&Monster>,
     player_query: Query<&TilePos, With<Player>>,
     blocking_query: Query<&TilePos, With<BlocksMovement>>,
@@ -21,23 +23,31 @@ pub fn spawn_monsters(
     };
 
     let mut rng = rand::rng();
-    let monster_count = rng.random_range(3..=10);
+    let monster_count = rng.random_range(5..=10);
     let tile_size = map.tile_size;
 
     info!("Spawning {} monsters", monster_count);
 
+    // Get list of rooms excluding first room (player's room)
+    let available_rooms: Vec<_> = map_builder.rooms.iter().skip(1).collect();
+
+    if available_rooms.is_empty() {
+        warn!("No rooms available for monster spawning");
+        return;
+    }
+
     for _ in 0..monster_count {
+        // Pick a random room
+        let room = available_rooms[rng.random_range(0..available_rooms.len())];
+
         let monster_pos = loop {
             let pos = TilePos {
-                x: rng.random_range(0..map.width),
-                y: rng.random_range(0..map.height),
+                x: rng.random_range(room.x1 + 1..room.x2),
+                y: rng.random_range(room.y1 + 1..room.y2),
             };
 
-            let dx = pos.x.abs_diff(player_pos.x);
-            let dy = pos.y.abs_diff(player_pos.y);
-
-            // Check not too close to player and not on a blocking tile
-            if (dx > 1 || dy > 1) && !blocking_query.iter().any(|blocked_pos| *blocked_pos == pos) {
+            // Check not on player or another blocking entity
+            if *player_pos != pos && !blocking_query.iter().any(|blocked_pos| *blocked_pos == pos) {
                 break pos;
             }
         };
@@ -57,6 +67,12 @@ pub fn spawn_monsters(
             BlocksMovement,
         ));
     }
+
+    info!(
+        "Spawned {} monsters across {} rooms",
+        monster_count,
+        available_rooms.len()
+    );
 }
 
 pub fn monster_turn(

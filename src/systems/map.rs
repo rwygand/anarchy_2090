@@ -1,5 +1,6 @@
 use crate::components::{BlocksMovement, MapDimensions, Wall};
 use crate::helpers::grid_to_world_position;
+use crate::map_builder::MapBuilder;
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -11,17 +12,20 @@ pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         ..default()
     };
 
-    // Create a 16x16 black sprite image
+    // Build the map with rooms and corridors
+    let mut map_builder = MapBuilder::new(map_dims.width, map_dims.height);
+    map_builder.build_rooms_and_corridors();
+
+    // Create tilemap texture
     let image_size = map_dims.tile_size as u32;
-    let pixel_count = (image_size * image_size * 4) as usize; // RGBA
+    let pixel_count = (image_size * image_size * 4) as usize;
     let mut pixels = vec![0u8; pixel_count];
 
-    // Fill with black color (R=0, G=0, B=0, A=255)
     for i in (0..pixel_count).step_by(4) {
-        pixels[i] = 0; // R
-        pixels[i + 1] = 0; // G
-        pixels[i + 2] = 0; // B
-        pixels[i + 3] = 255; // A
+        pixels[i] = 0;
+        pixels[i + 1] = 0;
+        pixels[i + 2] = 0;
+        pixels[i + 3] = 255;
     }
 
     let image = Image::new_fill(
@@ -86,11 +90,10 @@ pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         ..default()
     });
 
-    // Spawn perimeter walls
+    // Spawn walls where tiles are not floors
     for x in 0..map_dims.width {
         for y in 0..map_dims.height {
-            // Check if position is on perimeter
-            if x == 0 || x == map_dims.width - 1 || y == 0 || y == map_dims.height - 1 {
+            if !map_builder.is_floor(x, y) {
                 let wall_pos = TilePos { x, y };
                 let world_pos = grid_to_world_position(&wall_pos, &map_dims, 10.0);
 
@@ -100,7 +103,7 @@ pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
                         font_size: map_dims.tile_size,
                         ..default()
                     },
-                    TextColor(Color::srgb(0.5, 0.5, 0.5)), // Gray walls
+                    TextColor(Color::srgb(0.5, 0.5, 0.5)),
                     Transform::from_translation(world_pos),
                     Wall,
                     BlocksMovement,
@@ -110,5 +113,6 @@ pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         }
     }
 
+    commands.insert_resource(map_builder);
     commands.insert_resource(map_dims);
 }

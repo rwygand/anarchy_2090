@@ -3,6 +3,7 @@ use bevy_ecs_tilemap::prelude::*;
 
 mod components;
 mod helpers;
+mod map_builder;
 mod systems;
 
 use components::TickTimer;
