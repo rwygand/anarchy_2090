@@ -13,16 +13,16 @@ pub struct Wall;
 pub struct BlocksMovement;
 
 #[derive(Resource)]
-pub struct TurnTimer {
+pub struct TickTimer {
     pub timer: Timer,
-    pub turn_number: u32,
+    pub count: u32,
 }
 
-impl Default for TurnTimer {
+impl Default for TickTimer {
     fn default() -> Self {
         Self {
             timer: Timer::from_seconds(5.0, TimerMode::Repeating),
-            turn_number: 0,
+            count: 0,
         }
     }
 }

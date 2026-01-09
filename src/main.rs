@@ -5,14 +5,14 @@ mod components;
 mod helpers;
 mod systems;
 
-use components::TurnTimer;
+use components::TickTimer;
 use systems::*;
 
 pub struct AnarchyTwentyNinetyPlugin;
 
 impl Plugin for AnarchyTwentyNinetyPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<TurnTimer>()
+        app.init_resource::<TickTimer>()
             .add_plugins(TilemapPlugin)
             .add_systems(Startup, (camera::setup, map::generate_map))
             .add_systems(
@@ -20,7 +20,7 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                 (
                     player::spawn_player,
                     monster::spawn_monsters,
-                    turn::tick,
+                    timer::tick,
                     monster::monster_turn,
                 )
                     .before(player::player_movement),

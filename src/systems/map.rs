@@ -5,7 +5,11 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 pub fn generate_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
-    let map_dims = MapDimensions::default();
+    let map_dims = MapDimensions {
+        width: 80,
+        height: 50,
+        ..default()
+    };
 
     // Create a 16x16 black sprite image
     let image_size = map_dims.tile_size as u32;

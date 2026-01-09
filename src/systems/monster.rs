@@ -1,4 +1,4 @@
-use crate::components::{BlocksMovement, MapDimensions, Monster, Player, TurnTimer};
+use crate::components::{BlocksMovement, MapDimensions, Monster, Player, TickTimer};
 use crate::helpers::grid_to_world_position;
 use bevy::log::info;
 use bevy::prelude::*;
@@ -62,7 +62,7 @@ pub fn spawn_monsters(
 pub fn monster_turn(
     mut monster_query: Query<(&mut TilePos, &mut Transform), (With<Monster>, Without<Player>)>,
     blocking_query: Query<&TilePos, (With<BlocksMovement>, Without<Monster>)>,
-    turn_timer: Res<TurnTimer>,
+    turn_timer: Res<TickTimer>,
     map: Res<MapDimensions>,
 ) {
     // Only act when turn changes
