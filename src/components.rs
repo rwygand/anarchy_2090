@@ -72,3 +72,12 @@ impl Default for Visible {
         Self(false)
     }
 }
+
+#[derive(Component)]
+pub struct Explored(pub bool);
+
+impl Default for Explored {
+    fn default() -> Self {
+        Self(false)
+    }
+}
