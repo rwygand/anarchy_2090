@@ -42,27 +42,27 @@ pub fn spawn_monsters(
         // Pick a random room
         let room = available_rooms[rng.random_range(0..available_rooms.len())];
 
-        let monster_pos = loop {
-            let pos = TilePos {
-                x: rng.random_range(room.x1 + 1..room.x2),
-                y: rng.random_range(room.y1 + 1..room.y2),
-            };
-
-            // Check not on player or another blocking entity
-            if *player_pos != pos && !blocking_query.iter().any(|blocked_pos| *blocked_pos == pos) {
-                break pos;
-            }
+        // available_rooms will never contain the player, we can skip player collision checks
+        let monster_pos = TilePos {
+            x: rng.random_range(room.x1 + 1..room.x2),
+            y: rng.random_range(room.y1 + 1..room.y2),
         };
 
         let trans = grid_to_world_position(&monster_pos, &map, 10.0);
 
+        let monster_type = rng.random_range(0..=1);
+        let (glyph, color) = match monster_type {
+            0 => ("o", Color::srgb(1.0, 0.0, 0.0)), // Orc
+            _ => ("g", Color::srgb(0.0, 1.0, 0.0)), // Goblin
+        };
+
         commands.spawn((
-            Text2d::new("o"),
+            Text2d::new(glyph),
             TextFont {
                 font_size: tile_size,
                 ..default()
             },
-            TextColor(Color::srgb(1.0, 0.0, 0.0)),
+            TextColor(color),
             Transform::from_translation(trans),
             Monster,
             monster_pos,
