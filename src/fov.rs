@@ -1,4 +1,6 @@
-use bevy_ecs_tilemap::prelude::TilePos;
+use bevy::prelude::*;
+use bevy_ecs_tilemap::prelude::*;
+use pathfinding::prelude::bfs_reach;
 use std::collections::HashSet;
 
 pub fn compute_fov(
@@ -6,47 +8,69 @@ pub fn compute_fov(
     width: u32,
     height: u32,
     origin: &TilePos,
-    range: i32,
+    radius: u32,
 ) -> HashSet<TilePos> {
     let mut visible = HashSet::new();
-    visible.insert(*origin);
 
-    let range_squared = range * range;
-    let ox = origin.x as i32;
-    let oy = origin.y as i32;
-
-    // Cast rays in all directions
-    for angle in 0..360 {
-        let rad = (angle as f32).to_radians();
-        let dx = rad.cos();
-        let dy = rad.sin();
-
-        for step in 1..=range {
-            let x = ox + (dx * step as f32).round() as i32;
-            let y = oy + (dy * step as f32).round() as i32;
-
-            // Check bounds
-            if x < 0 || x >= width as i32 || y < 0 || y >= height as i32 {
-                break;
+    // Get all transparent tiles within radius
+    let transparent_tiles: Vec<_> = bfs_reach((origin.x, origin.y), |&(x, y)| {
+        [
+            (0, 1),
+            (0, -1),
+            (1, 0),
+            (-1, 0),
+            (1, 1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+        ]
+        .iter()
+        .filter_map(|(dx, dy)| {
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx >= 0 && ny >= 0 && nx < width as i32 && ny < height as i32 {
+                let idx = (ny as u32 * width + nx as u32) as usize;
+                if tiles.get(idx) == Some(&true) {
+                    let dist_sq = (nx - origin.x as i32).pow(2) + (ny - origin.y as i32).pow(2);
+                    if (dist_sq as f32).sqrt() <= radius as f32 {
+                        return Some((nx as u32, ny as u32));
+                    }
+                }
             }
+            None
+        })
+        .collect::<Vec<_>>()
+    })
+    .collect();
 
-            let pos = TilePos {
-                x: x as u32,
-                y: y as u32,
-            };
+    // Add all transparent tiles
+    for (x, y) in &transparent_tiles {
+        visible.insert(TilePos { x: *x, y: *y });
+    }
 
-            // Check distance
-            let dist_squared = (x - ox) * (x - ox) + (y - oy) * (y - oy);
-            if dist_squared > range_squared {
-                break;
-            }
-
-            visible.insert(pos);
-
-            // Stop if we hit a wall
-            let idx = (y * width as i32 + x) as usize;
-            if !tiles[idx] {
-                break;
+    // Add walls adjacent to visible tiles
+    for (x, y) in &transparent_tiles {
+        for (dx, dy) in [
+            (0, 1),
+            (0, -1),
+            (1, 0),
+            (-1, 0),
+            (1, 1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+        ] {
+            let nx = *x as i32 + dx;
+            let ny = *y as i32 + dy;
+            if nx >= 0 && ny >= 0 && nx < width as i32 && ny < height as i32 {
+                let idx = (ny as u32 * width + nx as u32) as usize;
+                if tiles.get(idx) == Some(&false) {
+                    // Wall tile
+                    visible.insert(TilePos {
+                        x: nx as u32,
+                        y: ny as u32,
+                    });
+                }
             }
         }
     }

@@ -16,7 +16,7 @@ pub fn update_fov(
                 map_dims.width,
                 map_dims.height,
                 pos,
-                fov.range,
+                fov.range as u32,
             );
             fov.is_dirty = false;
         }
