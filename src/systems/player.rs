@@ -53,14 +53,18 @@ pub fn spawn_player(
         },
     ));
 }
-
 pub fn player_movement(
+    mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&mut TilePos, &mut Transform), (With<Player>, Without<Monster>)>,
-    blocking_query: Query<&TilePos, (With<BlocksMovement>, Without<Player>)>,
+    mut player_query: Query<
+        (Entity, &mut TilePos, &mut Transform),
+        (With<Player>, Without<Monster>),
+    >,
+    blocking_query: Query<(Entity, &TilePos), (With<BlocksMovement>, Without<Player>)>,
+    monster_query: Query<(), With<Monster>>,
     map: Res<MapDimensions>,
 ) {
-    let Ok((mut player_pos, mut transform)) = player_query.single_mut() else {
+    let Ok((player_entity, mut player_pos, mut transform)) = player_query.single_mut() else {
         return;
     };
 
@@ -81,19 +85,15 @@ pub fn player_movement(
     {
         new_pos.x += 1;
     } else if keyboard_input.just_pressed(KeyCode::KeyQ) {
-        // Up-Left
         new_pos.y += 1;
         new_pos.x = new_pos.x.saturating_sub(1);
     } else if keyboard_input.just_pressed(KeyCode::KeyE) {
-        // Up-Right
         new_pos.y += 1;
         new_pos.x += 1;
     } else if keyboard_input.just_pressed(KeyCode::KeyZ) {
-        // Down-Left
         new_pos.y = new_pos.y.saturating_sub(1);
         new_pos.x = new_pos.x.saturating_sub(1);
     } else if keyboard_input.just_pressed(KeyCode::KeyC) {
-        // Down-Right
         new_pos.y = new_pos.y.saturating_sub(1);
         new_pos.x += 1;
     }
@@ -102,9 +102,23 @@ pub fn player_movement(
         return;
     }
 
-    // Check for monster collision
-    if blocking_query.iter().any(|pos| *pos == new_pos) {
-        info!("Player blocked by entity at ({}, {})", new_pos.x, new_pos.y);
+    // Check for blocking entity at new position
+    if let Some((target_entity, _)) = blocking_query.iter().find(|(_, pos)| **pos == new_pos) {
+        // If it's a monster, queue a melee attack
+        if monster_query.get(target_entity).is_ok() {
+            commands.entity(player_entity).insert(WantsToMelee {
+                target: target_entity,
+            });
+            info!(
+                "Player queued attack on monster at ({}, {})",
+                new_pos.x, new_pos.y
+            );
+        } else {
+            info!(
+                "Player blocked by non-monster entity at ({}, {})",
+                new_pos.x, new_pos.y
+            );
+        }
         return;
     }
 

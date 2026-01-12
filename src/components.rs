@@ -131,3 +131,8 @@ impl Default for Stats {
         }
     }
 }
+
+#[derive(Component)]
+pub struct WantsToMelee {
+    pub target: Entity,
+}

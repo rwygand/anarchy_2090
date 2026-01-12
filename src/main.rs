@@ -30,7 +30,9 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
             )
             .add_systems(
                 Update,
-                player::player_movement.before(visibility::update_fov),
+                (player::player_movement, melee_combat::melee_combat)
+                    .chain()
+                    .before(visibility::update_fov),
             )
             .add_systems(Update, visibility::update_fov.before(monster::monster_ai))
             .add_systems(
