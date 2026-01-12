@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub struct Actor;
+
+#[derive(Component)]
 pub struct Player;
 
 #[derive(Component)]
@@ -93,6 +96,7 @@ impl Default for PlayerDetected {
 }
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct Stats {
     // Core stats
     pub muscle: i32,
@@ -100,6 +104,10 @@ pub struct Stats {
     pub skill: i32,
     pub cool: i32,
     pub fitness: i32,
+
+    // TODO: These are temp stats that will eventually come from equipment or buffs
+    pub attack: i32,
+    pub defense: i32,
 
     // Derived stats
     pub health: i32,
@@ -115,6 +123,8 @@ impl Default for Stats {
             skill: 1,
             cool: 1,
             fitness: 1,
+            attack: 2,
+            defense: 0,
             health: 10,
             stamina: 10,
             load: 10,

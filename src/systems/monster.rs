@@ -1,7 +1,4 @@
-use crate::components::{
-    BlocksMovement, FieldOfView, MapDimensions, Monster, Player, PlayerDetected, Stats, TickTimer,
-    Visible,
-};
+use crate::components::*;
 use crate::helpers::grid_to_world_position;
 use crate::map_builder::MapBuilder;
 use bevy::log::info;
@@ -59,6 +56,7 @@ pub fn spawn_monsters(
             },
             TextColor(color),
             Transform::from_translation(trans),
+            Actor,
             Monster,
             monster_pos,
             BlocksMovement,
