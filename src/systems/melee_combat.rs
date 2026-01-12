@@ -3,21 +3,46 @@ use bevy::prelude::*;
 
 pub fn melee_combat(
     mut commands: Commands,
-    wants_melee_query: Query<(Entity, &WantsToMelee, &Stats), With<WantsToMelee>>,
-    mut target_query: Query<&mut Stats, Without<WantsToMelee>>,
+    wants_melee_query: Query<(Entity, &WantsToMelee, &Stats)>,
+    target_query: Query<&Stats, Without<WantsToMelee>>,
+    mut suffer_damage_query: Query<&mut SufferDamage>,
 ) {
     for (attacker_entity, wants_melee, attacker_stats) in wants_melee_query.iter() {
-        if let Ok(mut target_stats) = target_query.get_mut(wants_melee.target) {
+        if let Ok(target_stats) = target_query.get(wants_melee.target) {
             let damage = (attacker_stats.attack - target_stats.defense).max(0);
-            target_stats.health -= damage;
+
+            // Try to add damage to existing component, or insert new one
+            if let Ok(mut suffer_damage) = suffer_damage_query.get_mut(wants_melee.target) {
+                suffer_damage.add_damage(damage);
+            } else {
+                commands
+                    .entity(wants_melee.target)
+                    .insert(SufferDamage::new_damage(damage));
+            }
 
             info!(
-                "Attack dealt {} damage (attack: {}, defense: {}). Target health: {}",
-                damage, attacker_stats.attack, target_stats.defense, target_stats.health
+                "Queued {} damage to target (attack: {}, defense: {})",
+                damage, attacker_stats.attack, target_stats.defense
             );
         }
 
-        // Remove the WantsToMelee component after processing
         commands.entity(attacker_entity).remove::<WantsToMelee>();
+    }
+}
+
+pub fn apply_damage(
+    mut commands: Commands,
+    mut damage_query: Query<(Entity, &mut Stats, &SufferDamage)>,
+) {
+    for (entity, mut stats, suffer_damage) in damage_query.iter_mut() {
+        let total_damage = suffer_damage.total();
+        stats.health -= total_damage;
+
+        info!(
+            "Applied {} total damage. Health now: {}",
+            total_damage, stats.health
+        );
+
+        commands.entity(entity).remove::<SufferDamage>();
     }
 }

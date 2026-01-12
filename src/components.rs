@@ -136,3 +136,24 @@ impl Default for Stats {
 pub struct WantsToMelee {
     pub target: Entity,
 }
+
+#[derive(Component, Default)]
+pub struct SufferDamage {
+    pub amounts: Vec<i32>,
+}
+
+impl SufferDamage {
+    pub fn new_damage(amount: i32) -> Self {
+        Self {
+            amounts: vec![amount],
+        }
+    }
+
+    pub fn add_damage(&mut self, amount: i32) {
+        self.amounts.push(amount);
+    }
+
+    pub fn total(&self) -> i32 {
+        self.amounts.iter().sum()
+    }
+}

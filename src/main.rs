@@ -30,7 +30,11 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
             )
             .add_systems(
                 Update,
-                (player::player_movement, melee_combat::melee_combat)
+                (
+                    player::player_movement,
+                    melee_combat::melee_combat,
+                    melee_combat::apply_damage,
+                )
                     .chain()
                     .before(visibility::update_fov),
             )
