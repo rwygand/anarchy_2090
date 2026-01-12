@@ -76,6 +76,22 @@ pub fn player_movement(
         || keyboard_input.just_pressed(KeyCode::KeyD)
     {
         new_pos.x += 1;
+    } else if keyboard_input.just_pressed(KeyCode::KeyQ) {
+        // Up-Left
+        new_pos.y += 1;
+        new_pos.x = new_pos.x.saturating_sub(1);
+    } else if keyboard_input.just_pressed(KeyCode::KeyE) {
+        // Up-Right
+        new_pos.y += 1;
+        new_pos.x += 1;
+    } else if keyboard_input.just_pressed(KeyCode::KeyZ) {
+        // Down-Left
+        new_pos.y = new_pos.y.saturating_sub(1);
+        new_pos.x = new_pos.x.saturating_sub(1);
+    } else if keyboard_input.just_pressed(KeyCode::KeyC) {
+        // Down-Right
+        new_pos.y = new_pos.y.saturating_sub(1);
+        new_pos.x += 1;
     }
 
     if new_pos.x >= map.width || new_pos.y >= map.height {
