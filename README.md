@@ -38,11 +38,11 @@ upgrade their skills, and make moment to moment tactical decisions to survive an
 
 Core stats are:
 
-- **Brawn**: Affects melee damage and the ability to carry heavier types of gear.
-- **Brains**: Influences hacking abilities and technical skill effectiveness.
-- **Knack**: Impacts movement speed, evasion, and accuracy with ranged weapons
-- **Cool**: Affects stealth capabilities and resistance to cyberattacks.
-- **Fitness**: Determines overall physical endurance and health regeneration rate.
+- **Muscle**: Affects melee damage and carry weight.
+- **Brains**: Influences hacking, drone and nanobot abilities.
+- **Skill**: Impacts evasion, accuracy with ranged weapons and manual dexterity abilities.
+- **Cool**: Affects stealth capabilities and resistance to cyberattacks. Increases critical hit chance.
+- **Fitness**: Determines overall physical endurance, health and stamina regeneration rates.
 
 Derived stats include:
 

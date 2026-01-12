@@ -1,5 +1,6 @@
 use crate::components::{
-    BlocksMovement, FieldOfView, MapDimensions, Monster, Player, PlayerDetected, TickTimer, Visible,
+    BlocksMovement, FieldOfView, MapDimensions, Monster, Player, PlayerDetected, Stats, TickTimer,
+    Visible,
 };
 use crate::helpers::grid_to_world_position;
 use crate::map_builder::MapBuilder;
@@ -64,6 +65,7 @@ pub fn spawn_monsters(
             FieldOfView::new(6),
             Visible::default(),
             PlayerDetected::default(),
+            Stats::default(),
         ));
     }
 

@@ -1,4 +1,4 @@
-use crate::components::{BlocksMovement, FieldOfView, MapDimensions, Monster, Player};
+use crate::components::{BlocksMovement, FieldOfView, MapDimensions, Monster, Player, Stats};
 use crate::helpers::grid_to_world_position;
 use crate::map_builder::MapBuilder;
 use bevy::prelude::*;
@@ -46,6 +46,7 @@ pub fn spawn_player(
         player_pos,
         BlocksMovement,
         FieldOfView::new(8),
+        Stats::default(),
     ));
 }
 

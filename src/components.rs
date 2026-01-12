@@ -91,3 +91,33 @@ impl Default for PlayerDetected {
         Self(false)
     }
 }
+
+#[derive(Component)]
+pub struct Stats {
+    // Core stats
+    pub muscle: i32,
+    pub brains: i32,
+    pub skill: i32,
+    pub cool: i32,
+    pub fitness: i32,
+
+    // Derived stats
+    pub health: i32,
+    pub stamina: i32,
+    pub load: i32,
+}
+
+impl Default for Stats {
+    fn default() -> Self {
+        Self {
+            muscle: 1,
+            brains: 1,
+            skill: 1,
+            cool: 1,
+            fitness: 1,
+            health: 10,
+            stamina: 10,
+            load: 10,
+        }
+    }
+}
