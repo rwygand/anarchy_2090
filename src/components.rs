@@ -24,7 +24,7 @@ pub struct TickTimer {
 impl Default for TickTimer {
     fn default() -> Self {
         Self {
-            timer: Timer::from_seconds(5.0, TimerMode::Repeating),
+            timer: Timer::from_seconds(2.0, TimerMode::Repeating),
             count: 0,
         }
     }

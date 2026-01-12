@@ -24,31 +24,18 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     monster::spawn_monsters,
                     timer::tick,
                     visibility::mark_fov_dirty,
-                )
-                    .before(player::player_movement),
-            )
-            .add_systems(
-                Update,
-                (
                     player::player_movement,
                     monster::monster_turn,
                     combat::melee_combat,
                     combat::apply_damage,
                     combat::delete_the_dead,
+                    visibility::update_fov,
+                    monster::monster_ai,
+                    visibility::update_visibility,
+                    camera::follow_player,
                 )
-                    .chain()
-                    .before(visibility::update_fov),
-            )
-            .add_systems(Update, visibility::update_fov.before(monster::monster_ai))
-            .add_systems(
-                Update,
-                monster::monster_ai.before(visibility::update_visibility),
-            )
-            .add_systems(
-                Update,
-                visibility::update_visibility.before(camera::follow_player),
-            )
-            .add_systems(Update, camera::follow_player);
+                    .chain(),
+            );
     }
 }
 
