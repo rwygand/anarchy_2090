@@ -4,7 +4,9 @@ use crate::map_builder::MapBuilder;
 use bevy::log::info;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
+use pathfinding::prelude::astar;
 use rand::Rng;
+use std::collections::HashSet;
 
 pub fn spawn_monsters(
     mut commands: Commands,
@@ -75,56 +77,133 @@ pub fn spawn_monsters(
 }
 
 pub fn monster_turn(
-    mut monster_query: Query<(&mut TilePos, &mut Transform), (With<Monster>, Without<Player>)>,
-    blocking_query: Query<&TilePos, (With<BlocksMovement>, Without<Monster>)>,
+    mut commands: Commands,
+    mut monster_query: Query<
+        (
+            Entity,
+            &mut TilePos,
+            &mut Transform,
+            &PlayerDetected,
+            &Stats,
+        ),
+        (With<Monster>, Without<Player>),
+    >,
+    blocking_query: Query<(Entity, &TilePos), (With<BlocksMovement>, Without<Monster>)>,
+    player_query: Query<(Entity, &TilePos), With<Player>>,
     turn_timer: Res<TickTimer>,
     map: Res<MapDimensions>,
 ) {
-    // Only act when turn changes
     if !turn_timer.timer.just_finished() {
         return;
     }
 
+    let Ok((player_entity, player_pos)) = player_query.single() else {
+        return;
+    };
+
     let mut rng = rand::rng();
 
-    for (mut monster_pos, mut transform) in monster_query.iter_mut() {
-        // 25% chance to attempt movement
+    for (monster_entity, mut monster_pos, mut transform, detected, _stats) in
+        monster_query.iter_mut()
+    {
+        // If player is detected, try to attack or move towards them
+        if detected.0 {
+            // Check if player is adjacent
+            let dx = (player_pos.x as i32 - monster_pos.x as i32).abs();
+            let dy = (player_pos.y as i32 - monster_pos.y as i32).abs();
+
+            if dx <= 1 && dy <= 1 && (dx + dy) > 0 {
+                // Attack the player
+                commands.entity(monster_entity).insert(WantsToMelee {
+                    target: player_entity,
+                });
+                info!(
+                    "Monster at ({}, {}) attacks player!",
+                    monster_pos.x, monster_pos.y
+                );
+                continue;
+            }
+
+            // Find path to player using A*
+            let blocked_tiles: HashSet<_> = blocking_query
+                .iter()
+                .filter(|(entity, _)| *entity != monster_entity)
+                .map(|(_, pos)| *pos)
+                .collect();
+
+            let result = astar(
+                &*monster_pos,
+                |pos| {
+                    let mut neighbors = Vec::new();
+                    for dx in -1..=1 {
+                        for dy in -1..=1 {
+                            if dx == 0 && dy == 0 {
+                                continue;
+                            }
+                            let new_x = pos.x as i32 + dx;
+                            let new_y = pos.y as i32 + dy;
+
+                            if new_x >= 0
+                                && new_y >= 0
+                                && new_x < map.width as i32
+                                && new_y < map.height as i32
+                            {
+                                let neighbor = TilePos {
+                                    x: new_x as u32,
+                                    y: new_y as u32,
+                                };
+                                if !blocked_tiles.contains(&neighbor) || neighbor == *player_pos {
+                                    neighbors.push((neighbor, 1));
+                                }
+                            }
+                        }
+                    }
+                    neighbors
+                },
+                |pos| {
+                    ((pos.x as i32 - player_pos.x as i32).abs()
+                        + (pos.y as i32 - player_pos.y as i32).abs()) as u32
+                },
+                |pos| *pos == *player_pos,
+            );
+
+            if let Some((path, _)) = result {
+                if path.len() > 1 {
+                    let next_pos = path[1];
+                    let new_trans = grid_to_world_position(&next_pos, &map, 10.0);
+                    *monster_pos = next_pos;
+                    transform.translation = new_trans;
+                    info!(
+                        "Monster chasing player, moved to ({}, {})",
+                        next_pos.x, next_pos.y
+                    );
+                    continue;
+                }
+            }
+        }
+
+        // Random movement (existing code)
         if rng.random_bool(0.25) {
             let mut new_pos = *monster_pos;
 
-            // Random direction
             match rng.random_range(0..4) {
-                0 => new_pos.y += 1,                          // Up
-                1 => new_pos.y = new_pos.y.saturating_sub(1), // Down
-                2 => new_pos.x = new_pos.x.saturating_sub(1), // Left
-                _ => new_pos.x += 1,                          // Right
+                0 => new_pos.y += 1,
+                1 => new_pos.y = new_pos.y.saturating_sub(1),
+                2 => new_pos.x = new_pos.x.saturating_sub(1),
+                _ => new_pos.x += 1,
             }
 
-            // Check bounds
             if new_pos.x >= map.width || new_pos.y >= map.height {
-                info!(
-                    "Monster at ({}, {}) attempted to move off map to ({}, {})",
-                    monster_pos.x, monster_pos.y, new_pos.x, new_pos.y
-                );
                 continue;
             }
 
-            // Check for any blocking entity
-            if blocking_query.iter().any(|pos| *pos == new_pos) {
-                info!(
-                    "Monster at ({}, {}) blocked at ({}, {})",
-                    monster_pos.x, monster_pos.y, new_pos.x, new_pos.y
-                );
+            if blocking_query.iter().any(|(_, pos)| *pos == new_pos) {
                 continue;
             }
 
-            // Apply movement
             let new_trans = grid_to_world_position(&new_pos, &map, 10.0);
-
             *monster_pos = new_pos;
             transform.translation = new_trans;
-
-            info!("Monster moved to ({}, {})", new_pos.x, new_pos.y);
         }
     }
 }

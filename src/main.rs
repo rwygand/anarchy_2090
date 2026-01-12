@@ -23,7 +23,6 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     player::spawn_player,
                     monster::spawn_monsters,
                     timer::tick,
-                    monster::monster_turn,
                     visibility::mark_fov_dirty,
                 )
                     .before(player::player_movement),
@@ -32,6 +31,7 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                 Update,
                 (
                     player::player_movement,
+                    monster::monster_turn,
                     combat::melee_combat,
                     combat::apply_damage,
                     combat::delete_the_dead,

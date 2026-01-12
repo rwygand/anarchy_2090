@@ -54,12 +54,12 @@ pub fn delete_the_dead(
     for (entity, stats, player, monster) in dead_query.iter() {
         if stats.health <= 0 {
             if player.is_some() {
-                info!("Player has died!");
+                info!("Player has died! Health: {}", stats.health);
+                // Don't despawn player - just log death
             } else if monster.is_some() {
                 info!("Monster defeated!");
+                commands.entity(entity).despawn();
             }
-
-            commands.entity(entity).despawn();
         }
     }
 }
