@@ -32,8 +32,9 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                 Update,
                 (
                     player::player_movement,
-                    melee_combat::melee_combat,
-                    melee_combat::apply_damage,
+                    combat::melee_combat,
+                    combat::apply_damage,
+                    combat::delete_the_dead,
                 )
                     .chain()
                     .before(visibility::update_fov),

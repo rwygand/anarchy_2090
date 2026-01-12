@@ -1,4 +1,4 @@
-use crate::components::TickTimer;
+use crate::components::*;
 use bevy::prelude::*;
 
 pub fn tick(time: Res<Time>, mut tick_timer: ResMut<TickTimer>) {

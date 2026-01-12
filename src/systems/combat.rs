@@ -46,3 +46,20 @@ pub fn apply_damage(
         commands.entity(entity).remove::<SufferDamage>();
     }
 }
+
+pub fn delete_the_dead(
+    mut commands: Commands,
+    dead_query: Query<(Entity, &Stats, Option<&Player>, Option<&Monster>)>,
+) {
+    for (entity, stats, player, monster) in dead_query.iter() {
+        if stats.health <= 0 {
+            if player.is_some() {
+                info!("Player has died!");
+            } else if monster.is_some() {
+                info!("Monster defeated!");
+            }
+
+            commands.entity(entity).despawn();
+        }
+    }
+}
