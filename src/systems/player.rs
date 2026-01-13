@@ -44,6 +44,7 @@ pub fn spawn_player(
         Transform::from_translation(world_pos),
         Actor,
         Player,
+        Named("Player".to_string()),
         player_pos,
         BlocksMovement,
         FieldOfView::new(8),

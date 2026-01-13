@@ -45,9 +45,9 @@ pub fn spawn_monsters(
         let trans = grid_to_world_position(&monster_pos, &map, 10.0);
 
         let monster_type = rng.random_range(0..=1);
-        let (glyph, color) = match monster_type {
-            0 => ("o", Color::srgb(1.0, 0.0, 0.0)), // Orc
-            _ => ("g", Color::srgb(0.0, 1.0, 0.0)), // Goblin
+        let (name, glyph, color) = match monster_type {
+            0 => ("Assault Drone", "o", Color::srgb(1.0, 0.0, 0.0)), // Orc
+            _ => ("Guard", "g", Color::srgb(0.0, 1.0, 0.0)),         // Goblin
         };
 
         commands.spawn((
@@ -60,6 +60,7 @@ pub fn spawn_monsters(
             Transform::from_translation(trans),
             Actor,
             Monster,
+            Named(name.to_string()),
             monster_pos,
             BlocksMovement,
             FieldOfView::new(6),

@@ -3,6 +3,9 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Actor;
 
+#[derive(Component, Default)]
+pub struct Named(pub String);
+
 #[derive(Component)]
 pub struct Player;
 
