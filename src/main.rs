@@ -15,11 +15,18 @@ pub struct AnarchyTwentyNinetyPlugin;
 impl Plugin for AnarchyTwentyNinetyPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TickTimer>()
-            .init_resource::<GameLog>() // Add this line
+            .init_resource::<GameLog>()
+            .init_resource::<CursorPosition>()
             .add_plugins(TilemapPlugin)
             .add_systems(
                 Startup,
-                (camera::setup, map::generate_map, ui::setup_ui).chain(),
+                (
+                    camera::setup,
+                    map::generate_map,
+                    ui::setup_ui,
+                    tooltip::setup_tooltip,
+                )
+                    .chain(),
             )
             .add_systems(
                 Update,
@@ -42,7 +49,8 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     ui::update_game_log,
                 )
                     .chain(),
-            );
+            )
+            .add_systems(Update, (tooltip::track_cursor, tooltip::update_tooltip));
     }
 }
 

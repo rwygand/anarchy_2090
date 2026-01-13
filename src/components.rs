@@ -226,3 +226,12 @@ impl GameLog {
 
 #[derive(Component)]
 pub struct GameLogText;
+
+#[derive(Resource, Default)]
+pub struct CursorPosition {
+    pub screen: Option<Vec2>,
+    pub world: Option<Vec2>,
+}
+
+#[derive(Component)]
+pub struct TooltipText;
