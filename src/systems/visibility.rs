@@ -1,4 +1,6 @@
-use crate::components::{Explored, FieldOfView, MapDimensions, Monster, Player, Visible, Wall};
+use crate::components::{
+    Explored, FieldOfView, MapDimensions, Monster, Player, Visible, Wall,
+};
 use crate::fov::compute_fov;
 use crate::map_builder::MapBuilder;
 use bevy::prelude::*;

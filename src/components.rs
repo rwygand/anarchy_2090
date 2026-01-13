@@ -87,11 +87,17 @@ impl Default for Explored {
 
 // In src/components.rs
 #[derive(Component)]
-pub struct PlayerDetected(pub bool);
+pub struct PlayerDetected {
+    pub is_detected: bool,
+    pub was_detected_last_frame: bool,
+}
 
 impl Default for PlayerDetected {
     fn default() -> Self {
-        Self(false)
+        Self {
+            is_detected: false,
+            was_detected_last_frame: false,
+        }
     }
 }
 
@@ -200,3 +206,20 @@ pub struct StaminaStat;
 
 #[derive(Component)]
 pub struct LoadStat;
+
+#[derive(Resource, Default)]
+pub struct GameLog {
+    pub messages: Vec<String>,
+}
+
+impl GameLog {
+    pub fn add_message(&mut self, message: String) {
+        self.messages.push(message);
+        if self.messages.len() > 100 {
+            self.messages.remove(0);
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct GameLogText;

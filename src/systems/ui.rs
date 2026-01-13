@@ -148,7 +148,36 @@ fn info_panel_bundle() -> impl Bundle {
         BackgroundColor(Color::BLACK),
         ZIndex(0),
         InfoPanelBorder,
+        children![(
+            Text::new(""),
+            TextFont {
+                font_size: 14.0,
+                ..default()
+            },
+            TextColor(Color::WHITE),
+            GameLogText,
+        )],
     )
+}
+
+pub fn update_game_log(
+    mut text_query: Query<&mut Text, With<GameLogText>>,
+    game_log: Res<GameLog>,
+) {
+    let Ok(mut text) = text_query.single_mut() else {
+        return;
+    };
+
+    // Replace the entire text instead of appending
+    text.0 = game_log
+        .messages
+        .iter()
+        .rev()
+        .take(5) // Show only last 5 messages
+        .rev()
+        .map(|s| s.as_str())
+        .collect::<Vec<_>>()
+        .join("\n");
 }
 
 fn color_for_current_stat(current: i32, max: i32) -> Color {

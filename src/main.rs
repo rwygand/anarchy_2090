@@ -7,7 +7,7 @@ mod helpers;
 mod map_builder;
 mod systems;
 
-use components::TickTimer;
+use components::*;
 use systems::*;
 
 pub struct AnarchyTwentyNinetyPlugin;
@@ -15,6 +15,7 @@ pub struct AnarchyTwentyNinetyPlugin;
 impl Plugin for AnarchyTwentyNinetyPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TickTimer>()
+            .init_resource::<GameLog>() // Add this line
             .add_plugins(TilemapPlugin)
             .add_systems(
                 Startup,
@@ -38,6 +39,7 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     camera::follow_player,
                     ui::constrain_camera_to_viewport,
                     ui::update_health_display,
+                    ui::update_game_log,
                 )
                     .chain(),
             );

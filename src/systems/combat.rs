@@ -6,6 +6,7 @@ pub fn melee_combat(
     wants_melee_query: Query<(Entity, &WantsToMelee, &Stats)>,
     target_query: Query<&Stats, Without<WantsToMelee>>,
     mut suffer_damage_query: Query<&mut SufferDamage>,
+    mut game_log: ResMut<GameLog>,
 ) {
     for (attacker_entity, wants_melee, attacker_stats) in wants_melee_query.iter() {
         if let Ok(target_stats) = target_query.get(wants_melee.target) {
@@ -20,10 +21,10 @@ pub fn melee_combat(
                     .insert(SufferDamage::new_damage(damage));
             }
 
-            info!(
+            game_log.add_message(format!(
                 "Queued {} damage to target (attack: {}, defense: {})",
                 damage, attacker_stats.attack, target_stats.defense
-            );
+            ));
         }
 
         commands.entity(attacker_entity).remove::<WantsToMelee>();
@@ -33,15 +34,16 @@ pub fn melee_combat(
 pub fn apply_damage(
     mut commands: Commands,
     mut damage_query: Query<(Entity, &mut Stats, &SufferDamage)>,
+    mut game_log: ResMut<GameLog>,
 ) {
     for (entity, mut stats, suffer_damage) in damage_query.iter_mut() {
         let total_damage = suffer_damage.total();
         stats.current_health -= total_damage;
 
-        info!(
+        game_log.add_message(format!(
             "Applied {} total damage. Health now: {}",
             total_damage, stats.current_health
-        );
+        ));
 
         commands.entity(entity).remove::<SufferDamage>();
     }
@@ -50,14 +52,15 @@ pub fn apply_damage(
 pub fn delete_the_dead(
     mut commands: Commands,
     dead_query: Query<(Entity, &Stats, Option<&Player>, Option<&Monster>)>,
+    mut game_log: ResMut<GameLog>,
 ) {
     for (entity, stats, player, monster) in dead_query.iter() {
-        if stats.health <= 0 {
+        if stats.current_health <= 0 {
             if player.is_some() {
-                info!("Player has died! Health: {}", stats.health);
+                game_log.add_message(format!("Player has died! Health: {}", stats.health));
                 // Don't despawn player - just log death
             } else if monster.is_some() {
-                info!("Monster defeated!");
+                game_log.add_message("Monster defeated!".to_string());
                 commands.entity(entity).despawn();
             }
         }

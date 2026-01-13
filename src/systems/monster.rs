@@ -92,6 +92,7 @@ pub fn monster_turn(
     player_query: Query<(Entity, &TilePos), With<Player>>,
     turn_timer: Res<TickTimer>,
     map: Res<MapDimensions>,
+    mut game_log: ResMut<GameLog>,
 ) {
     if !turn_timer.timer.just_finished() {
         return;
@@ -107,7 +108,7 @@ pub fn monster_turn(
         monster_query.iter_mut()
     {
         // If player is detected, try to attack or move towards them
-        if detected.0 {
+        if detected.is_detected {
             // Check if player is adjacent
             let dx = (player_pos.x as i32 - monster_pos.x as i32).abs();
             let dy = (player_pos.y as i32 - monster_pos.y as i32).abs();
@@ -117,10 +118,10 @@ pub fn monster_turn(
                 commands.entity(monster_entity).insert(WantsToMelee {
                     target: player_entity,
                 });
-                info!(
+                game_log.add_message(format!(
                     "Monster at ({}, {}) attacks player!",
                     monster_pos.x, monster_pos.y
-                );
+                ));
                 continue;
             }
 
@@ -173,10 +174,6 @@ pub fn monster_turn(
                     let new_trans = grid_to_world_position(&next_pos, &map, 10.0);
                     *monster_pos = next_pos;
                     transform.translation = new_trans;
-                    info!(
-                        "Monster chasing player, moved to ({}, {})",
-                        next_pos.x, next_pos.y
-                    );
                     continue;
                 }
             }
@@ -211,6 +208,7 @@ pub fn monster_turn(
 pub fn monster_ai(
     mut monster_query: Query<(&TilePos, &FieldOfView, &mut PlayerDetected), With<Monster>>,
     player_query: Query<&TilePos, With<Player>>,
+    mut game_log: ResMut<GameLog>,
 ) {
     let Ok(player_pos) = player_query.single() else {
         return;
@@ -219,13 +217,19 @@ pub fn monster_ai(
     for (monster_pos, fov, mut detected) in monster_query.iter_mut() {
         let can_see = fov.visible_tiles.contains(player_pos);
 
-        if can_see && !detected.0 {
+        // Only log when transitioning from not detected to detected
+        if can_see && !detected.was_detected_last_frame {
             info!(
-                "Monster at ({}, {}) spotted player at ({}, {})!",
+                "Monster at ({}, {}) spotted player at ({}, {})",
                 monster_pos.x, monster_pos.y, player_pos.x, player_pos.y
             );
+            game_log.add_message(format!(
+                "Monster at ({}, {}) spotted player at ({}, {})!",
+                monster_pos.x, monster_pos.y, player_pos.x, player_pos.y
+            ));
         }
 
-        detected.0 = can_see;
+        detected.was_detected_last_frame = detected.is_detected;
+        detected.is_detected = can_see;
     }
 }

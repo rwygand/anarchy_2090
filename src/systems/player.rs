@@ -63,6 +63,7 @@ pub fn player_movement(
     blocking_query: Query<(Entity, &TilePos), (With<BlocksMovement>, Without<Player>)>,
     monster_query: Query<(), With<Monster>>,
     map: Res<MapDimensions>,
+    mut game_log: ResMut<GameLog>,
 ) {
     let Ok((player_entity, mut player_pos, mut transform)) = player_query.single_mut() else {
         return;
@@ -109,10 +110,10 @@ pub fn player_movement(
             commands.entity(player_entity).insert(WantsToMelee {
                 target: target_entity,
             });
-            info!(
-                "Player queued attack on monster at ({}, {})",
+            game_log.add_message(format!(
+                "Player attack on monster at ({}, {})",
                 new_pos.x, new_pos.y
-            );
+            ));
         } else {
             info!(
                 "Player blocked by non-monster entity at ({}, {})",
