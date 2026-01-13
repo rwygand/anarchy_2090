@@ -48,7 +48,7 @@ pub fn spawn_player(
         BlocksMovement,
         FieldOfView::new(8),
         Stats {
-            defense: 2,
+            defense: 0,
             ..default()
         },
     ));

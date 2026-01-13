@@ -36,11 +36,11 @@ pub fn apply_damage(
 ) {
     for (entity, mut stats, suffer_damage) in damage_query.iter_mut() {
         let total_damage = suffer_damage.total();
-        stats.health -= total_damage;
+        stats.current_health -= total_damage;
 
         info!(
             "Applied {} total damage. Health now: {}",
-            total_damage, stats.health
+            total_damage, stats.current_health
         );
 
         commands.entity(entity).remove::<SufferDamage>();
