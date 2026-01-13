@@ -93,7 +93,6 @@ pub fn monster_turn(
     player_query: Query<(Entity, &TilePos), With<Player>>,
     turn_timer: Res<TickTimer>,
     map: Res<MapDimensions>,
-    mut game_log: ResMut<GameLog>,
 ) {
     if !turn_timer.timer.just_finished() {
         return;
@@ -119,10 +118,6 @@ pub fn monster_turn(
                 commands.entity(monster_entity).insert(WantsToMelee {
                     target: player_entity,
                 });
-                game_log.add_message(format!(
-                    "Monster at ({}, {}) attacks player!",
-                    monster_pos.x, monster_pos.y
-                ));
                 continue;
             }
 
@@ -207,30 +202,36 @@ pub fn monster_turn(
 }
 
 pub fn monster_ai(
-    mut monster_query: Query<(&TilePos, &FieldOfView, &mut PlayerDetected), With<Monster>>,
+    mut monster_query: Query<
+        (Entity, &TilePos, &FieldOfView, &mut PlayerDetected, &Named),
+        With<Monster>,
+    >,
     player_query: Query<&TilePos, With<Player>>,
+    turn_timer: Res<TickTimer>,
     mut game_log: ResMut<GameLog>,
 ) {
+    if !turn_timer.timer.just_finished() {
+        return;
+    }
+
     let Ok(player_pos) = player_query.single() else {
         return;
     };
 
-    for (monster_pos, fov, mut detected) in monster_query.iter_mut() {
+    for (entity, monster_pos, fov, mut detected, name) in monster_query.iter_mut() {
         let can_see = fov.visible_tiles.contains(player_pos);
 
         // Only log when transitioning from not detected to detected
         if can_see && !detected.was_detected_last_frame {
             info!(
-                "Monster at ({}, {}) spotted player at ({}, {})",
-                monster_pos.x, monster_pos.y, player_pos.x, player_pos.y
+                "{} (Entity {:?}) at ({}, {}) spotted player at ({}, {})",
+                name.0, entity, monster_pos.x, monster_pos.y, player_pos.x, player_pos.y
             );
-            game_log.add_message(format!(
-                "Monster at ({}, {}) spotted player at ({}, {})!",
-                monster_pos.x, monster_pos.y, player_pos.x, player_pos.y
-            ));
+            game_log.add_message(format!("{} shouts, \"I see you, little man!\"", name.0));
         }
 
-        detected.was_detected_last_frame = detected.is_detected;
+        // CRITICAL: Save current state AFTER checking transition
+        detected.was_detected_last_frame = can_see;
         detected.is_detected = can_see;
     }
 }

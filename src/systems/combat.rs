@@ -3,13 +3,13 @@ use bevy::prelude::*;
 
 pub fn melee_combat(
     mut commands: Commands,
-    wants_melee_query: Query<(Entity, &WantsToMelee, &Stats)>,
-    target_query: Query<&Stats, Without<WantsToMelee>>,
+    wants_melee_query: Query<(Entity, &WantsToMelee, &Stats, &Named)>,
+    target_query: Query<(&Stats, &Named), Without<WantsToMelee>>,
     mut suffer_damage_query: Query<&mut SufferDamage>,
     mut game_log: ResMut<GameLog>,
 ) {
-    for (attacker_entity, wants_melee, attacker_stats) in wants_melee_query.iter() {
-        if let Ok(target_stats) = target_query.get(wants_melee.target) {
+    for (attacker_entity, wants_melee, attacker_stats, attacker_name) in wants_melee_query.iter() {
+        if let Ok((target_stats, target_name)) = target_query.get(wants_melee.target) {
             let damage = (attacker_stats.attack - target_stats.defense).max(0);
 
             // Try to add damage to existing component, or insert new one
@@ -22,8 +22,8 @@ pub fn melee_combat(
             }
 
             game_log.add_message(format!(
-                "Queued {} damage to target (attack: {}, defense: {})",
-                damage, attacker_stats.attack, target_stats.defense
+                "{} attacks {} for {} damage",
+                attacker_name.0, target_name.0, damage
             ));
         }
 
@@ -34,16 +34,10 @@ pub fn melee_combat(
 pub fn apply_damage(
     mut commands: Commands,
     mut damage_query: Query<(Entity, &mut Stats, &SufferDamage)>,
-    mut game_log: ResMut<GameLog>,
 ) {
     for (entity, mut stats, suffer_damage) in damage_query.iter_mut() {
         let total_damage = suffer_damage.total();
         stats.current_health -= total_damage;
-
-        game_log.add_message(format!(
-            "Applied {} total damage. Health now: {}",
-            total_damage, stats.current_health
-        ));
 
         commands.entity(entity).remove::<SufferDamage>();
     }
