@@ -111,8 +111,11 @@ pub struct Stats {
 
     // Derived stats
     pub health: i32,
+    pub current_health: i32,
     pub stamina: i32,
+    pub current_stamina: i32,
     pub load: i32,
+    pub current_load: i32,
 }
 
 impl Default for Stats {
@@ -126,8 +129,11 @@ impl Default for Stats {
             attack: 2,
             defense: 0,
             health: 10,
+            current_health: 10,
             stamina: 10,
+            current_stamina: 10,
             load: 10,
+            current_load: 10,
         }
     }
 }
@@ -159,7 +165,38 @@ impl SufferDamage {
 }
 
 #[derive(Component)]
-pub struct ViewportBorder;
+pub struct InfoPanelBorder;
 
 #[derive(Component)]
-pub struct InfoPanelBorder;
+pub struct HealthLabel;
+
+#[derive(Component)]
+pub struct StaminaLabel;
+
+#[derive(Component)]
+pub struct LoadLabel;
+
+#[derive(Component)]
+pub struct StatDisplay {
+    pub current: i32,
+    pub max: i32,
+}
+
+impl StatDisplay {
+    pub fn new(current: i32, max: i32) -> Self {
+        Self { current, max }
+    }
+
+    pub fn format_values(&self) -> String {
+        format!(" [ {} / {} ]", self.current, self.max)
+    }
+}
+
+#[derive(Component)]
+pub struct HealthStat;
+
+#[derive(Component)]
+pub struct StaminaStat;
+
+#[derive(Component)]
+pub struct LoadStat;

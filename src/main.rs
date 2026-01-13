@@ -37,6 +37,7 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     visibility::update_visibility,
                     camera::follow_player,
                     ui::constrain_camera_to_viewport,
+                    ui::update_health_display,
                 )
                     .chain(),
             );
@@ -57,6 +58,7 @@ fn main() {
                     ..default()
                 }),
         )
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(AnarchyTwentyNinetyPlugin)
         .run();
 }
