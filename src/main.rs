@@ -16,7 +16,10 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TickTimer>()
             .add_plugins(TilemapPlugin)
-            .add_systems(Startup, (camera::setup, map::generate_map))
+            .add_systems(
+                Startup,
+                (camera::setup, map::generate_map, ui::setup_ui).chain(),
+            )
             .add_systems(
                 Update,
                 (
@@ -33,6 +36,7 @@ impl Plugin for AnarchyTwentyNinetyPlugin {
                     monster::monster_ai,
                     visibility::update_visibility,
                     camera::follow_player,
+                    ui::constrain_camera_to_viewport,
                 )
                     .chain(),
             );

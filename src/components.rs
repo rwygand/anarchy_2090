@@ -157,3 +157,9 @@ impl SufferDamage {
         self.amounts.iter().sum()
     }
 }
+
+#[derive(Component)]
+pub struct ViewportBorder;
+
+#[derive(Component)]
+pub struct InfoPanelBorder;
